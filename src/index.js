@@ -327,9 +327,6 @@ class ChineseInk {
       }
     }
     this.fluidmap = newFluid;
-    if (this.particles.length > 1000) {
-      this.particles.splice(0, this.particles.length - 1000);
-    }
     for (var i = 0; i < this.particles.length; ++i) {
       var p = this.particles[i];
       p.xs -= p.xs / 10;
