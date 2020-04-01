@@ -14,7 +14,7 @@ body {
 
 #tutorial {
   pointer-events: none;
-  color : #FAE1B0;
+  color : rgb(176, 247, 250);
   font : 30px Arial;
   position : absolute; 
   top : 50%; 

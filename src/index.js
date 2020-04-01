@@ -88,10 +88,7 @@ class Engine {
     this.canvas.addEventListener('touchleave', (event) => this.manageTouch(event));
     this.canvas.addEventListener('touchcancel', (event) => this.manageTouch(event));
     this.canvas.addEventListener('touchenter', (event) => this.manageTouch(event));
-    this.canvas.addEventListener('mousedown', (event) => this.mouseDown(event));
     this.canvas.addEventListener('mousemove', (event) => this.mouseMove(event));
-    this.canvas.addEventListener('mouseup', (event) => this.mouseUp(event));
-    this.canvas.addEventListener('mouseout', (event) => this.mouseUp(event));
   }
 
   initGameObject() {
@@ -189,18 +186,25 @@ class Engine {
 
 }
 
+const colorPalette = {
+  space: '#1D2951',
+  navy: '#000080',
+  yale: '#0E4D92',
+  egyption: '#1034A6',
+  azure: '#0080FF',
+  sapphire: '#0F52BA',
+  olympic: '#008ECC',
+  maya: '#73C2FB',
+  steel: '#4682B4',
+  tiffany: '#81D8D0',
+  babyBlue: '#89CFF0'
+}
 
 class ChineseInk {
   constructor(engine) {
     this.engine = engine
-    this.bg_color = '#547980';
-    this.colors = [
-      '#547980',
-      '#45ADA8',
-      '#FAE1B0 ',
-      '#AFBC9D',
-      '#F54A28'
-    ];
+    this.bg_color = colorPalette.space;
+    this.colors = Object.values(colorPalette).slice(1);
     // ideal to fine tune your brush!
     this.parameters = {
       squareSize: 10
