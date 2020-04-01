@@ -1,0 +1,27 @@
+{
+  "name": "portfolio",
+  "version": "1.0.0",
+  "description": "My portfolio for showcasing projects I've worked on",
+  "main": "index.js",
+  "scripts": {
+    "develop": "webpack --mode development --watch",
+    "build": "webpack --mode production"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vimiomori/portfolio.git"
+  },
+  "author": "vivian.muchen@gmail.com",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/vimiomori/portfolio/issues"
+  },
+  "homepage": "https://github.com/vimiomori/portfolio#readme",
+  "dependencies": {
+    "css-element-queries": "^1.2.3"
+  },
+  "devDependencies": {
+    "webpack": "^4.42.1",
+    "webpack-cli": "^3.3.11"
+  }
+}
