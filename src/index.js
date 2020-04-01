@@ -347,8 +347,8 @@ class ChineseInk {
   };
 
   render() {
-    this.engine.ctx.strokeStyle = '#594F4F';
-    this.engine.ctx.fillStyle = '#594F4F';
+    this.engine.ctx.strokeStyle = this.bg_color;
+    this.engine.ctx.fillStyle = this.bg_color;
     this.engine.ctx.globalAlpha = .4;
     for (var i = 0; i < this.particles.length; ++i) {
       var p = this.particles[i];
