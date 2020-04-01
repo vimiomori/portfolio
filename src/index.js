@@ -81,8 +81,9 @@ class Engine {
 
   initInputListener() {
     // Multitouch Events!
-    this.canvas.addEventListener('touchstart', (event) => this.manageTouch(event), {passive: true});
-    this.canvas.addEventListener('touchmove', (event) => this.manageTouch(event), {passive: true});
+    this.manageMouseOver();
+    this.canvas.addEventListener('touchstart', (event) => this.manageTouch(event));
+    this.canvas.addEventListener('touchmove', (event) => this.manageTouch(event));
     this.canvas.addEventListener('touchend', (event) => this.manageTouch(event));
     this.canvas.addEventListener('touchleave', (event) => this.manageTouch(event));
     this.canvas.addEventListener('touchcancel', (event) => this.manageTouch(event));
@@ -101,6 +102,23 @@ class Engine {
   /**
    * Inputs methods
    */
+
+  manageMouseOver() {
+    let interval = null
+    let event = null
+    this.canvas.addEventListener('mouseover', (e) => {
+      event = e
+      this.mouseDown(event)
+      interval = setInterval(() => {
+        this.mouseMove(event)
+      }, 100000)
+    });
+    document.querySelector('#tutorial').addEventListener('click', () => {
+      this.mouseUp(event)
+      clearInterval(interval)
+    });
+  }
+  
   manageTouch(event) {
     var inputs = [];
     var type = event.type;
