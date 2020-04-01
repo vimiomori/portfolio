@@ -73,24 +73,24 @@ class Engine {
 
   initInputListener() {
     // Multitouch Events!
-    this.canvas.addEventListener('touchstart', this.manageTouch);
-    this.canvas.addEventListener('touchmove', this.manageTouch);
-    this.canvas.addEventListener('touchend', this.manageTouch);
-    this.canvas.addEventListener('touchleave', this.manageTouch);
-    this.canvas.addEventListener('touchcancel', this.manageTouch);
-    this.canvas.addEventListener('touchenter', this.manageTouch);
-    this.canvas.addEventListener('mousedown', this.mouseDown);
-    this.canvas.addEventListener('mousemove', this.mouseMove);
-    this.canvas.addEventListener('mouseup', this.mouseUp);
-    this.canvas.addEventListener('mouseout', this.mouseUp);
+    this.canvas.addEventListener('touchstart', (event) => this.manageTouch(event));
+    this.canvas.addEventListener('touchmove', (event) => this.manageTouch(event));
+    this.canvas.addEventListener('touchend', (event) => this.manageTouch(event));
+    this.canvas.addEventListener('touchleave', (event) => this.manageTouch(event));
+    this.canvas.addEventListener('touchcancel', (event) => this.manageTouch(event));
+    this.canvas.addEventListener('touchenter', (event) => this.manageTouch(event));
+    this.canvas.addEventListener('mousedown', (event) => this.mouseDown(event));
+    this.canvas.addEventListener('mousemove', (event) => this.mouseMove(event));
+    this.canvas.addEventListener('mouseup', (event) => this.mouseUp(event));
+    this.canvas.addEventListener('mouseout', (event) => this.mouseUp(event));
   }
   /**
    * Inputs methods
    */
   manageTouch(event) {
     var inputs = [];
+    var type = event.type;
     for (var i = 0; i < event.targetTouches.length; ++i) {
-      var type = event.type;
       if (type === 'touchstart') {
         type = 'start';
         this.lastCapture = 0;
@@ -107,11 +107,11 @@ class Engine {
         type = 'up';
         this.lastCapture = 0;
       }
-      targetTouche = event.targetTouches[i];
+      targetTouches = event.targetTouches[i];
       inputs.push({
-        x: targetTouche.clientX - this.deltaLeft - window.scrollX,
-        y: targetTouche.clientY - this.deltaTop + window.scrollY,
-        id: targetTouche.identifier,
+        x: targetTouches.clientX - this.deltaLeft - window.scrollX,
+        y: targetTouches.clientY - this.deltaTop + window.scrollY,
+        id: targetTouches.identifier,
         type: type
       });
     }
@@ -245,7 +245,7 @@ class ChineseInk {
           this.fluidmap[x][y].y = dy;
         }
         this.inputsDelta[input.id] = input;
-        color = this.colors[Math.random() * this.colors.length | 0];
+        const color = this.colors[Math.random() * this.colors.length | 0];
         for (var i = 0; i < 2; ++i) {
           var a = Math.random() * Math.PI * 2;
           var d = Math.random() * 10;
