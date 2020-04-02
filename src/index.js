@@ -11,9 +11,10 @@ class Engine {
     this.deltaLeft = this.el.offsetLeft;
     // an Array of inputs
     this.inputs = [];
-    // CanvasInfos
     this.canvas = null;
     this.ctx = null;
+    this.background = null;
+    this.bgCtx = null;
     // The current Date
     this.now = 0;
     // Device capture Time
@@ -58,14 +59,21 @@ class Engine {
      */
   initCanvas() {
     // create The Canvas
+    this.background = document.createElement('canvas');
+    this.background.width = this.width;
+    this.background.height = this.height;
+    this.background.classList.add('background')
     this.canvas = document.createElement('canvas');
     this.canvas.width = this.width;
     this.canvas.height = this.height;
+    this.canvas.classList.add('paint')
     // we clean the DOM
     this.el.innerHTML = '';
     // append canvas to DOM
+    this.el.appendChild(this.background);
     this.el.appendChild(this.canvas);
     this.ctx = this.canvas.getContext('2d');
+    this.bgCtx = this.background.getContext('2d');
   }
 
   initResizeListener() {
@@ -75,6 +83,8 @@ class Engine {
       this.height = window.innerHeight;
       this.canvas.width = this.width;
       this.canvas.height = this.width;
+      this.background.width = this.width;
+      this.background.height = this.height;
       this.reset()
       this.run();
     })
@@ -205,7 +215,9 @@ const colorPalette = {
 class Ink {
   constructor(engine) {
     this.engine = engine
-    this.bg_color = colorPalette.space;
+    this.bg_colors = this.gradient(colorPalette.space, colorPalette.yale, 500);
+    this.round = 0;
+    this.darken = false;
     this.colors = Object.values(colorPalette).slice(1);
     // ideal to fine tune your brush!
     this.parameters = {
@@ -213,7 +225,7 @@ class Ink {
     };
     this.fluidmap = [];
     this.particles = [];
-    this.oldParticles = [];
+    // this.oldParticles = [];
     this.width = this.engine.width / 20 | 0;
     this.height = this.engine.height / 20 | 0;
     this.inputsDelta = {};
@@ -227,8 +239,6 @@ class Ink {
     // Init your experience here
     // example : we paint canvas with blue color
     // Call the initers
-    this.engine.ctx.fillStyle = this.bg_color;
-    this.engine.ctx.fillRect(0, 0, this.engine.width, this.engine.height);
     for (let x = 0; x <= this.width; ++x) {
       this.fluidmap[x] = [];
       for (let y = 0; y <= this.height; ++y) {
@@ -243,6 +253,7 @@ class Ink {
   run() {
     this.input();
     this.animate();
+    this.changeBg();
     this.render();
   }
 
@@ -376,8 +387,8 @@ class Ink {
     this.fluidmap = newFluid;
     for (let i = 0; i < this.particles.length; ++i) {
       const p = this.particles[i];
-      p.xs -= p.xs / 7;
-      p.ys -= p.ys / 3;
+      p.xs -= p.xs / 15;
+      p.ys -= p.ys / 5;
       if (p.x >= 0 && (p.x / 20 | 0) < this.width && p.y >= 0 && (p.y / 20 | 0) < this.height) {
         p.xs += this.fluidmap[p.x / 20 | 0][p.y / 20 | 0].x;
         p.ys += this.fluidmap[p.x / 20 | 0][p.y / 20 | 0].y;
@@ -391,10 +402,26 @@ class Ink {
         p.xs = -p.xs;
       }
     }
-    if (this.particles.length > 1000) {
-      this.oldParticles.push(...this.particles.splice(0, this.particles.length - 1000))
+    if (this.particles.length > 2000) {
+      this.particles.splice(0, this.particles.length - 2000)
     }
   };
+
+  changeBg() {
+    this.engine.bgCtx.strokeStyle = this.bg_colors[this.round];
+    this.engine.bgCtx.fillStyle = this.bg_colors[this.round];
+    this.engine.bgCtx.globalAlpha = 1.0;
+    this.engine.bgCtx.fillRect(0, 0, this.engine.width, this.engine.height);
+    if (!this.darken && this.round < 500) {
+      ++this.round
+    } else if (!this.darken && this.round === 500) {
+      this.darken = true;
+    } else if (this.round === 0) {
+      this.darken = false;
+    } else {
+      --this.round
+    }
+  }
 
   render() {
     this.engine.ctx.strokeStyle = this.bg_color;
@@ -411,8 +438,6 @@ class Ink {
     this.engine.ctx.globalAlpha = 1.0;
     if (!this.hasParticles) {
       this.hasParticles = true;
-      this.engine.ctx.fillStyle = this.bg_color;
-      this.engine.ctx.fillRect(0, 0, this.engine.width, this.engine.height);
     }
   };
   /**
@@ -433,6 +458,36 @@ class Ink {
     // Do wathever you should do here (kill timer?)
     // We will Destroy this object when we leave this function
   // };
+  gradient(startColor, endColor, steps) {
+    const start = {
+            'Hex'   : startColor,
+            'R'     : parseInt(startColor.slice(1,3), 16),
+            'G'     : parseInt(startColor.slice(3,5), 16),
+            'B'     : parseInt(startColor.slice(5,7), 16)
+    }
+    const end = {
+            'Hex'   : endColor,
+            'R'     : parseInt(endColor.slice(1,3), 16),
+            'G'     : parseInt(endColor.slice(3,5), 16),
+            'B'     : parseInt(endColor.slice(5,7), 16)
+    }
+    const diffR = end['R'] - start['R'];
+    const diffG = end['G'] - start['G'];
+    const diffB = end['B'] - start['B'];
+
+    const stepsHex  = new Array();
+    const stepsR    = new Array();
+    const stepsG    = new Array();
+    const stepsB    = new Array();
+
+    for(var i = 0; i <= steps; i++) {
+      stepsR[i] = start['R'] + ((diffR / steps) * i);
+      stepsG[i] = start['G'] + ((diffG / steps) * i);
+      stepsB[i] = start['B'] + ((diffB / steps) * i);
+      stepsHex[i] = '#' + Math.round(stepsR[i]).toString(16) + '' + Math.round(stepsG[i]).toString(16) + '' + Math.round(stepsB[i]).toString(16);
+    }
+    return stepsHex;
+  }
 }
 // Main.js
 

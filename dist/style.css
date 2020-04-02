@@ -12,6 +12,16 @@ body {
   overflow : hidden;
 }
 
+.background {
+  position: absolute;
+  z-index: 0;
+}
+
+.paint {
+  position: absolute;
+  z-index: 1;
+}
+
 #credit {
   color: rgb(155, 223, 255);
   position: fixed;
