@@ -226,11 +226,11 @@ class ChineseInk {
     // Call the initers
     this.engine.ctx.fillStyle = this.bg_color;
     this.engine.ctx.fillRect(0, 0, this.engine.width, this.engine.height);
-    for (var x = 0; x < this.width; ++x) {
+    for (var x = 0; x <= this.width; ++x) {
       this.fluidmap[x] = [];
-      for (var y = 0; y < this.height; ++y) {
+      for (var y = 0; y <= this.height; ++y) {
         this.fluidmap[x][y] = {
-          x: Math.random() * 2 - 1,
+          x: Math.random() * 2 - 1,  // -1 to 1
           y: Math.random() * 2 - 1
         };
       }
@@ -262,21 +262,14 @@ class ChineseInk {
         if (this.inputsDelta[input.id]) {
           var oldInput = this.inputsDelta[input.id];
           var x = input.x / 20 | 0;
+          if (x >= this.fluidmap.length) { continue; }
           var y = input.y / 20 | 0;
           var dx = input.x - oldInput.x;
           var dy = input.y - oldInput.y;
-          if (dx > 1) {
-            dx = 1;
-          }
-          if (dx < -1) {
-            dx = -1;
-          }
-          if (dy > 1) {
-            dy = 1;
-          }
-          if (dy < -1) {
-            dy = -1;
-          }
+          if (dx > 1) { dx = 1; }
+          if (dx < -1) { dx = -1; }
+          if (dy > 1) { dy = 1; }
+          if (dy < -1) { dy = -1; }
           this.fluidmap[x][y].x = dx;
           this.fluidmap[x][y].y = dy;
         }
@@ -298,12 +291,12 @@ class ChineseInk {
   };
 
   animate() {
-    var newFluid = [];
-    for (var x = 0; x < this.width; ++x) {
+    const newFluid = [];
+    for (let x = 0; x < this.width; ++x) {
       newFluid[x] = [];
-      for (var y = 0; y < this.height; ++y) {
-        var dx = this.fluidmap[x][y].x * .8;
-        var dy = this.fluidmap[x][y].y * .8;
+      for (let y = 0; y < this.height; ++y) {
+        let dx = this.fluidmap[x][y].x * .8;
+        let dy = this.fluidmap[x][y].y * .8;
         if (x > 0) {
           dx += this.fluidmap[x - 1][y].x * .05;
           dy += this.fluidmap[x - 1][y].y * .05;
@@ -327,8 +320,8 @@ class ChineseInk {
       }
     }
     this.fluidmap = newFluid;
-    for (var i = 0; i < this.particles.length; ++i) {
-      var p = this.particles[i];
+    for (let i = 0; i < this.particles.length; ++i) {
+      const p = this.particles[i];
       p.xs -= p.xs / 10;
       p.ys -= p.ys / 10;
       if (p.x >= 0 && (p.x / 20 | 0) < this.width && p.y >= 0 && (p.y / 20 | 0) < this.height) {
