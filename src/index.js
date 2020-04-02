@@ -167,11 +167,6 @@ class Engine {
         type: 'move'
       }];
     }
-    var now = new Date().getTime();
-    if (this.lastCapture) {
-      this.captureTime = this.lastCapture - now;
-    }
-    this.lastCapture = now;
   }
   mouseUp(event) {
     this.mouseIsDown = 0;
@@ -235,7 +230,7 @@ class ChineseInk {
         };
       }
     }
-    for (var i = 0; i < 500; ++i) {
+    for (var i = 0; i < 700; ++i) {
       this.particles.push({
         x: Math.random() * this.engine.width,
         y: Math.random() * this.engine.height,
@@ -258,37 +253,36 @@ class ChineseInk {
       if (!this.getInput && input.type === 'down') {
         this.getInput = true;
       }
-      if (input.type !== 'up') {
-        if (this.inputsDelta[input.id]) {
-          var oldInput = this.inputsDelta[input.id];
-          var x = input.x / 20 | 0;
-          if (x >= this.fluidmap.length) { continue; }
-          var y = input.y / 20 | 0;
-          var dx = input.x - oldInput.x;
-          var dy = input.y - oldInput.y;
-          if (dx > 1) { dx = 1; }
-          if (dx < -1) { dx = -1; }
-          if (dy > 1) { dy = 1; }
-          if (dy < -1) { dy = -1; }
-          this.fluidmap[x][y].x = dx;
-          this.fluidmap[x][y].y = dy;
-        }
-        this.inputsDelta[input.id] = input;
-        const color = this.colors[Math.random() * this.colors.length | 0];
-        for (var i = 0; i < 2; ++i) {
-          var a = Math.random() * Math.PI * 2;
-          var d = Math.random() * 10;
-          this.particles.push({
-            x: input.x - Math.sin(a) * d,
-            y: input.y + Math.cos(a) * d,
-            xs: 0,
-            ys: 0,
-            c: color
-          });
-        }
+      if (input.type === 'up') {
+        continue;
       }
+      if (this.inputsDelta[input.id]) {
+        var oldInput = this.inputsDelta[input.id];
+        var x = input.x / 20 | 0;
+        if (x >= this.fluidmap.length) { continue; }
+        var y = input.y / 20 | 0;
+        var dx = input.x - oldInput.x;
+        var dy = input.y - oldInput.y;
+        if (dx > 1) { dx = 1; }
+        if (dx < -1) { dx = -1; }
+        if (dy > 1) { dy = 1; }
+        if (dy < -1) { dy = -1; }
+        this.fluidmap[x][y].x = dx;
+        this.fluidmap[x][y].y = dy;
+      }
+      this.inputsDelta[input.id] = input;
+      const color = this.colors[Math.random() * this.colors.length | 0];
+      var a = Math.random() * Math.PI * 2;
+      var d = Math.random() * 10;
+      this.particles.push({
+        x: input.x - Math.sin(a) * d,
+        y: input.y + Math.cos(a) * d,
+        xs: 0,
+        ys: 0,
+        c: color
+      });
     }
-  };
+  }
 
   animate() {
     const newFluid = [];
@@ -322,8 +316,8 @@ class ChineseInk {
     this.fluidmap = newFluid;
     for (let i = 0; i < this.particles.length; ++i) {
       const p = this.particles[i];
-      p.xs -= p.xs / 10;
-      p.ys -= p.ys / 10;
+      p.xs -= p.xs / 15;
+      p.ys -= p.ys / 5;
       if (p.x >= 0 && (p.x / 20 | 0) < this.width && p.y >= 0 && (p.y / 20 | 0) < this.height) {
         p.xs += this.fluidmap[p.x / 20 | 0][p.y / 20 | 0].x;
         p.ys += this.fluidmap[p.x / 20 | 0][p.y / 20 | 0].y;
@@ -345,8 +339,11 @@ class ChineseInk {
     this.engine.ctx.globalAlpha = .4;
     for (var i = 0; i < this.particles.length; ++i) {
       var p = this.particles[i];
+      while (this.engine.ctx.globalAlphal < 1) {
+        this.engine.ctx.globalAlpha = this.engine.ctx.globalAlpha * 1.05;
+      }
       this.engine.ctx.fillStyle = p.c;
-      this.engine.ctx.fillRect(p.x, p.y, 1, 1);
+      this.engine.ctx.fillRect(p.x, p.y, 1, 2);
     }
     this.engine.ctx.globalAlpha = 1.0;
     if (!this.hasParticles) {
