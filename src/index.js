@@ -205,6 +205,7 @@ class Ink {
     };
     this.fluidmap = [];
     this.particles = [];
+    this.oldParticles = [];
     this.width = this.engine.width / 20 | 0;
     this.height = this.engine.height / 20 | 0;
     this.inputsDelta = {};
@@ -229,15 +230,15 @@ class Ink {
         };
       }
     }
-    for (let i = 0; i < 700; ++i) {
-      this.particles.push({
-        x: Math.random() * this.engine.width,
-        y: Math.random() * this.engine.height,
-        xs: 0,
-        ys: 0,
-        c: this.colors[Math.random() * this.colors.length | 0]
-      });
-    }
+    // for (let i = 0; i < 700; ++i) {
+    //   this.particles.push({
+    //     x: Math.random() * this.engine.width,
+    //     y: Math.random() * this.engine.height,
+    //     xs: 0,
+    //     ys: 0,
+    //     c: this.colors[Math.random() * this.colors.length | 0]
+    //   });
+    // }
   };
 
   run() {
@@ -273,13 +274,57 @@ class Ink {
       const color = this.colors[Math.random() * this.colors.length | 0];
       const a = Math.random() * Math.PI * 2;
       const d = Math.random() * 10;
+      const x = input.x - Math.sin(a) * d
+      const y = input.y + Math.cos(a) * d
+      if (this.particles.length > 0) {
+        const prevParticle = this.particles[this.particles.length - 1]
+        if (Math.abs(prevParticle.x - x) > 2) {
+          this.fillGap(prevParticle, x, y, color)
+        }
+      }
+      if (this.particles.length > 1000) {
+        this.oldParticles = this.particles.splice(0, this.particles.length - 1000)
+      }
       this.particles.push({
-        x: input.x - Math.sin(a) * d,
-        y: input.y + Math.cos(a) * d,
+        x: x,
+        y: y,
         xs: 0,
         ys: 0,
         c: color
       });
+    }
+  }
+
+  fillGap(pp, x , y, c) {
+    let dx = x - pp.x
+    let dy = y - pp.y
+    if (!dx) { return; }
+    if (dx > 0) {
+      for (let i = 0; i < dx; ++i) {
+        if (i == dx / 2 | 0) {
+          y = dy ? dy : y
+        }
+        this.particles.push({
+          x: pp.x + i,
+          y: y,
+          xs: 0,
+          ys: 0,
+          c: c
+        });
+      };
+    } else {
+      for (let i = 0; i > dx; --i) {
+        if (i == dx / 2 | 0) {
+          y = dy ? dy : y
+        }
+        this.particles.push({
+          x: pp.x + i,
+          y: y,
+          xs: 0,
+          ys: 0,
+          c: c
+        });
+      };
     }
   }
 
