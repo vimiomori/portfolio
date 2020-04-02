@@ -30,6 +30,7 @@ class Engine {
     this.initInputListener();
     this.initInk();
     this.initResizeListener();
+    // this.initClearListener();
     this.run();
   };
 
@@ -78,6 +79,13 @@ class Engine {
       this.run();
     })
   }
+
+  // initClearListener() {
+  //   this.canvas.addEventListener('mousedown', (event) => {
+  //     cancelAnimationFrame(this.animationId)
+  //     this.ink.clear();
+  //   })
+  // }
 
   initInputListener() {
     // Multitouch Events!
@@ -230,15 +238,6 @@ class Ink {
         };
       }
     }
-    // for (let i = 0; i < 700; ++i) {
-    //   this.particles.push({
-    //     x: Math.random() * this.engine.width,
-    //     y: Math.random() * this.engine.height,
-    //     xs: 0,
-    //     ys: 0,
-    //     c: this.colors[Math.random() * this.colors.length | 0]
-    //   });
-    // }
   };
 
   run() {
@@ -278,31 +277,47 @@ class Ink {
       const y = input.y + Math.cos(a) * d
       if (this.particles.length > 0) {
         const prevParticle = this.particles[this.particles.length - 1]
-        if (Math.abs(prevParticle.x - x) > 2) {
+        if (Math.abs(prevParticle.x - x) > 3) {
           this.fillGap(prevParticle, x, y, color)
         }
       }
-      if (this.particles.length > 1000) {
-        this.oldParticles = this.particles.splice(0, this.particles.length - 1000)
-      }
-      this.particles.push({
+      [1, 2, 3].forEach(() => {this.particles.push({
         x: x,
         y: y,
         xs: 0,
         ys: 0,
         c: color
-      });
+      })});
     }
   }
 
+  // prepClear() {
+  //   this.oldParticles.push(...this.particles)
+  //   if (!this.oldParticles) { return; }
+  //   this.oldParticles.reverse();
+  //   this.engine.ctx.strokeStyle = this.bg_color;
+  //   this.engine.ctx.fillStyle = this.bg_color;
+  //   this.engine.ctx.globalAlpha = 1;
+  // }
+
+  // clear() {
+  //   this.prepClear();
+  //   for (var i = 0; i < this.oldParticles.length; ++i) {
+  //     const p = this.oldParticles[i];
+  //     // this.engine.ctx.fillStyle = p.c;
+  //     this.engine.ctx.fillRect(p.x, p.y, 1, 1);
+  //   }
+  // }
+
   fillGap(pp, x , y, c) {
-    let dx = x - pp.x
-    let dy = y - pp.y
+    const dx = x - pp.x
+    const dy = y - pp.y
     if (!dx) { return; }
     if (dx > 0) {
+      const step = dy ? dx / Math.abs(dy) | 0 : 0
       for (let i = 0; i < dx; ++i) {
-        if (i == dx / 2 | 0) {
-          y = dy ? dy : y
+        if (i % step === 0) {
+          dy > 0 ? y += 1 : y -= 1
         }
         this.particles.push({
           x: pp.x + i,
@@ -313,9 +328,10 @@ class Ink {
         });
       };
     } else {
+      const step = dy ? -dx / Math.abs(dy) | 0 : 0
       for (let i = 0; i > dx; --i) {
-        if (i == dx / 2 | 0) {
-          y = dy ? dy : y
+        if (Math.abs(i % step) === 0) {
+          dy > 0 ? y += 1 : y -= 1
         }
         this.particles.push({
           x: pp.x + i,
@@ -374,6 +390,9 @@ class Ink {
       if (p.y < 0 || p.y > this.engine.height) {
         p.xs = -p.xs;
       }
+    }
+    if (this.particles.length > 1000) {
+      this.oldParticles.push(...this.particles.splice(0, this.particles.length - 1000))
     }
   };
 
