@@ -117,16 +117,16 @@ class Engine {
   }
   
   manageTouch(event) {
-    var inputs = [];
-    var type = event.type;
-    for (var i = 0; i < event.targetTouches.length; ++i) {
+    const inputs = [];
+    const type = event.type;
+    for (let i = 0; i < event.targetTouches.length; ++i) {
       if (type === 'touchstart') {
         type = 'start';
         this.lastCapture = 0;
       }
       else if (type === 'touchmove') {
         type = 'move';
-        var now = new Date().getTime();
+        const now = new Date().getTime();
         if (this.lastCapture) {
           this.captureTime = this.lastCapture - now;
         }
@@ -183,7 +183,6 @@ class Engine {
 
 const colorPalette = {
   space: '#1D2951',
-  navy: '#000080',
   yale: '#0E4D92',
   egyption: '#1034A6',
   azure: '#0080FF',
@@ -221,16 +220,16 @@ class Ink {
     // Call the initers
     this.engine.ctx.fillStyle = this.bg_color;
     this.engine.ctx.fillRect(0, 0, this.engine.width, this.engine.height);
-    for (var x = 0; x <= this.width; ++x) {
+    for (let x = 0; x <= this.width; ++x) {
       this.fluidmap[x] = [];
-      for (var y = 0; y <= this.height; ++y) {
+      for (let y = 0; y <= this.height; ++y) {
         this.fluidmap[x][y] = {
           x: Math.random() * 2 - 1,  // -1 to 1
           y: Math.random() * 2 - 1
         };
       }
     }
-    for (var i = 0; i < 700; ++i) {
+    for (let i = 0; i < 700; ++i) {
       this.particles.push({
         x: Math.random() * this.engine.width,
         y: Math.random() * this.engine.height,
@@ -248,8 +247,8 @@ class Ink {
   }
 
   input() {
-    for (var i = 0; i < this.engine.inputs.length; ++i) {
-      var input = this.engine.inputs[i];
+    for (let i = 0; i < this.engine.inputs.length; ++i) {
+      let input = this.engine.inputs[i];
       if (!this.getInput && input.type === 'down') {
         this.getInput = true;
       }
@@ -257,14 +256,14 @@ class Ink {
         continue;
       }
       if (this.inputsDelta[input.id]) {
-        var oldInput = this.inputsDelta[input.id];
-        var x = input.x / 20 | 0;
+        const oldInput = this.inputsDelta[input.id];
+        const x = input.x / 20 | 0;
         if (x >= this.fluidmap.length) { continue; }
-        var y = input.y / 20 | 0;
-        var dx = input.x - oldInput.x;
-        var dy = input.y - oldInput.y;
-        if (dx > 1) { dx = 1; }
-        if (dx < -1) { dx = -1; }
+        const y = input.y / 20 | 0;
+        let dx = input.x - oldInput.x;
+        let dy = input.y - oldInput.y;
+        if (dx > 1.2) { dx = 1.2; }
+        if (dx < -1.2) { dx = -1.2; }
         if (dy > 1) { dy = 1; }
         if (dy < -1) { dy = -1; }
         this.fluidmap[x][y].x = dx;
@@ -272,8 +271,8 @@ class Ink {
       }
       this.inputsDelta[input.id] = input;
       const color = this.colors[Math.random() * this.colors.length | 0];
-      var a = Math.random() * Math.PI * 2;
-      var d = Math.random() * 10;
+      const a = Math.random() * Math.PI * 2;
+      const d = Math.random() * 10;
       this.particles.push({
         x: input.x - Math.sin(a) * d,
         y: input.y + Math.cos(a) * d,
@@ -316,8 +315,8 @@ class Ink {
     this.fluidmap = newFluid;
     for (let i = 0; i < this.particles.length; ++i) {
       const p = this.particles[i];
-      p.xs -= p.xs / 15;
-      p.ys -= p.ys / 5;
+      p.xs -= p.xs / 7;
+      p.ys -= p.ys / 3;
       if (p.x >= 0 && (p.x / 20 | 0) < this.width && p.y >= 0 && (p.y / 20 | 0) < this.height) {
         p.xs += this.fluidmap[p.x / 20 | 0][p.y / 20 | 0].x;
         p.ys += this.fluidmap[p.x / 20 | 0][p.y / 20 | 0].y;
@@ -338,12 +337,12 @@ class Ink {
     this.engine.ctx.fillStyle = this.bg_color;
     this.engine.ctx.globalAlpha = .4;
     for (var i = 0; i < this.particles.length; ++i) {
-      var p = this.particles[i];
       while (this.engine.ctx.globalAlphal < 1) {
         this.engine.ctx.globalAlpha = this.engine.ctx.globalAlpha * 1.05;
       }
+      const p = this.particles[i];
       this.engine.ctx.fillStyle = p.c;
-      this.engine.ctx.fillRect(p.x, p.y, 1, 2);
+      this.engine.ctx.fillRect(p.x, p.y, 1, 1);
     }
     this.engine.ctx.globalAlpha = 1.0;
     if (!this.hasParticles) {
