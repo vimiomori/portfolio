@@ -28,7 +28,7 @@ class Engine {
   start() {
     this.initCanvas();
     this.initInputListener();
-    this.initGameObject();
+    this.initInk();
     this.initResizeListener();
     this.run();
   };
@@ -37,7 +37,7 @@ class Engine {
     const run = () => {
       this.animationId = requestAnimationFrame(run)
       this.now = new Date().getTime();
-      this.gameObject.run()
+      this.ink.run()
     }
     this.animationId = requestAnimationFrame(run)
   }
@@ -45,8 +45,8 @@ class Engine {
   reset() {
     // we call game object reseter
     cancelAnimationFrame(this.animationId)
-    this.gameObject = null;
-    this.initGameObject()
+    this.ink = null;
+    this.initInk()
   };
 
   // getImage() {
@@ -91,9 +91,9 @@ class Engine {
     this.canvas.addEventListener('mousemove', (event) => this.mouseMove(event));
   }
 
-  initGameObject() {
-    this.gameObject = new ChineseInk(this);
-    this.gameObject.init();
+  initInk() {
+    this.ink = new Ink(this);
+    this.ink.init();
   }
 
   /**
@@ -110,10 +110,10 @@ class Engine {
         this.mouseMove(event)
       }, 100000)
     });
-    document.querySelector('#tutorial').addEventListener('click', () => {
-      this.mouseUp(event)
+    this.canvas.addEventListener('mouseout', (e) => {
       clearInterval(interval)
-    });
+      this.mouseUp(e)
+    })
   }
   
   manageTouch(event) {
@@ -195,7 +195,7 @@ const colorPalette = {
   babyBlue: '#89CFF0'
 }
 
-class ChineseInk {
+class Ink {
   constructor(engine) {
     this.engine = engine
     this.bg_color = colorPalette.space;
@@ -373,8 +373,6 @@ class ChineseInk {
 }
 // Main.js
 
-var container = document.getElementById('container')
-// var engine = new Engine(container, ChineseInk);
-// engine.start();
+const container = document.getElementById('container')
 const engine = new Engine(container)
 engine.start();

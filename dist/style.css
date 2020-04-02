@@ -12,12 +12,21 @@ body {
   overflow : hidden;
 }
 
-#tutorial {
-  pointer-events: none;
-  color : rgb(176, 247, 250);
-  font : 30px Arial;
-  position : absolute; 
-  top : 50%; 
-  left : 30%;
+#credit {
+  color: rgb(155, 223, 255);
+  position: fixed;
+  left: 5px;
+  bottom: 0px;
+}
 
+#credit a:link {
+  color: rgb(155, 223, 255);
+}
+
+#credit a:visited{
+  color: rgb(57, 192, 255);
+}
+
+#credit a:hover a:active{
+  color: rgb(111, 204, 247);
 }
