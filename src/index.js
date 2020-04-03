@@ -11,16 +11,18 @@ class Engine {
     this.deltaLeft = this.el.offsetLeft;
     // an Array of inputs
     this.inputs = [];
-    this.canvas = null;
-    this.ctx = null;
+    // background canvas
     this.background = null;
     this.bgCtx = null;
+    // paint canvas
+    this.canvas = null;
+    this.ctx = null;
     // The current Date
+    this.startTime = new Date().getTime();
     this.now = 0;
-    // Device capture Time
-    this.captureTime = 0;
-    this.lastCapture = 0;
-
+    // // Device capture Time
+    // this.captureTime = 0;
+    // this.lastCapture = 0;
     this.mouseIsDown = 0;
     this.mouseId = 0;
     this.animationId = undefined;
@@ -39,7 +41,11 @@ class Engine {
     const run = () => {
       this.animationId = requestAnimationFrame(run)
       this.now = new Date().getTime();
-      this.ink.run()
+      if (this.now - this.startTime < 60000) {
+        this.ink.run()
+      } else {
+        cancelAnimationFrame(this.animationId)
+      }
     }
     this.animationId = requestAnimationFrame(run)
   }
@@ -203,11 +209,11 @@ const colorPalette = {
   space: '#1D2951',
   yale: '#0E4D92',
   egyption: '#1034A6',
-  azure: '#0080FF',
-  sapphire: '#0F52BA',
+  // azure: '#0080FF',
+  // sapphire: '#0F52BA',
   olympic: '#008ECC',
   maya: '#73C2FB',
-  steel: '#4682B4',
+  // steel: '#4682B4',
   tiffany: '#81D8D0',
   babyBlue: '#89CFF0'
 }
@@ -215,10 +221,10 @@ const colorPalette = {
 class Ink {
   constructor(engine) {
     this.engine = engine
-    this.bg_colors = this.gradient(colorPalette.space, colorPalette.yale, 500);
+    this.bg_colors = this.gradient(colorPalette.space, colorPalette.tiffany, 500);
     this.round = 0;
     this.darken = false;
-    this.colors = Object.values(colorPalette).slice(1);
+    this.colors = Object.values(colorPalette);
     // ideal to fine tune your brush!
     this.parameters = {
       squareSize: 10
@@ -231,6 +237,8 @@ class Ink {
     this.inputsDelta = {};
     this.getInput = false;
     this.hasParticles = false;
+    this.topParticles = {};
+
   }
     /**
      * This function is called after we created your pobject
@@ -243,8 +251,8 @@ class Ink {
       this.fluidmap[x] = [];
       for (let y = 0; y <= this.height; ++y) {
         this.fluidmap[x][y] = {
-          x: Math.random() * 2 - 1,  // -1 to 1
-          y: Math.random() * 2 - 1
+          x: null,
+          y: null
         };
       }
     }
@@ -412,14 +420,15 @@ class Ink {
     this.engine.bgCtx.fillStyle = this.bg_colors[this.round];
     this.engine.bgCtx.globalAlpha = 1.0;
     this.engine.bgCtx.fillRect(0, 0, this.engine.width, this.engine.height);
-    if (!this.darken && this.round < 500) {
+    if (this.round < 500) {
       ++this.round
-    } else if (!this.darken && this.round === 500) {
-      this.darken = true;
-    } else if (this.round === 0) {
-      this.darken = false;
     } else {
-      --this.round
+      this.bg_colors = this.gradient(
+        this.engine.bgCtx.fillStyle,
+        this.colors[Math.random() * this.colors.length | 0],
+        500
+      );
+      this.round = 0;
     }
   }
 
@@ -434,12 +443,17 @@ class Ink {
       const p = this.particles[i];
       this.engine.ctx.fillStyle = p.c;
       this.engine.ctx.fillRect(p.x, p.y, 1, 1);
+      this.updateTopParticles(p)
     }
     this.engine.ctx.globalAlpha = 1.0;
     if (!this.hasParticles) {
       this.hasParticles = true;
     }
   };
+
+  updateTopParticles() {
+    
+  }
   /**
    * This function is called when user click reset button
    */

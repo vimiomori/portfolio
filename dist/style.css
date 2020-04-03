@@ -24,7 +24,8 @@ body {
 
 #credit {
   color: rgb(155, 223, 255);
-  position: fixed;
+  position: absolute;
+  z-index: 2;
   left: 5px;
   bottom: 0px;
 }
