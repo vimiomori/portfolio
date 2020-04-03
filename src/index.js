@@ -247,7 +247,11 @@ class Ink {
     this.getInput = false;
     this.hasParticles = false;
     this.topParticles = {};
+    this.highestParticle = this.engine.height;
     this.fallParticles = [];
+    this.clearParticles = [];
+    this.startClear = false;
+    this.midHeight = 0;
 
   }
     /**
@@ -466,8 +470,12 @@ class Ink {
     const x = Math.round(p.x)
     const top = this.topParticles[x]
     if (!top) {this.topParticles[x] = [p.y, p.c]}
-    else if (p.y < top[0]) {this.topParticles[x] = [p.y, p.c]}
-    else {return;}
+    else if (p.y < top[0]) {
+      this.topParticles[x] = [p.y, p.c]
+      if (p.y < this.highestParticle) {
+        this.highestParticle = p.y
+      }
+    } else { return; }
   }
   /**
    * This function is called when user click reset button
@@ -501,14 +509,31 @@ class Ink {
         c: this.colors[Math.random() * this.colors.length | 0],
         ys: 5
       })
+      this.clearParticles.push({
+        x: parseFloat(p),
+        y: this.topParticles[p][0] - 10,
+        c: this.topParticles[p][1],
+        ys: 5
+      })
     }
+    this.midHeight = Math.round((this.engine.height - this.highestParticle) / 2) * 2
+    console.log(this.midHeight)
   }
 
   animateClear() {
     for (let i = 0; i < this.fallParticles.length; ++i) {
       const p = this.fallParticles[i];
+      if (Math.round(p.y) === this.midHeight) {
+        this.startClear = true;
+      }
       p.y += p.ys
-      // p.ys = p.ys > 1 ? p.ys - 1 : p.ys
+    }
+
+    if (!this.startClear) { return; }
+
+    for (let i = 0; i < this.clearParticles.length; ++i) {
+      const p = this.clearParticles[i];
+      p.y += p.ys
     }
   }
 
@@ -519,12 +544,15 @@ class Ink {
       this.engine.ctx.fillStyle = p.c;
       this.engine.ctx.fillRect(p.x, p.y, 1, 3);
     }
-    // this.fallParticles.forEach(p => {
-    //   this.engine.ctx.fillStyle = p.c;
-    //   this.engine.ctx.strokeStyle = p.c;
-    //   // console.log(parseFloat(p), this.topParticles[p])
-    //   this.engine.ctx.fillRect(p.x, p.y, 1, 1)
-    // })
+
+    if (!this.startClear) { return; }
+
+    for (var i = 0; i < this.clearParticles.length; ++i) {
+      const p = this.clearParticles[i];
+      this.engine.ctx.globalAlpha = 1.0;
+      this.engine.ctx.fillStyle = p.c;
+      this.engine.ctx.fillRect(p.x, p.y, 1, 3);
+    }
   }
 
   gradient(startColor, endColor, steps) {
