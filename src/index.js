@@ -33,7 +33,7 @@ class Engine {
     this.initInputListener();
     this.initInk();
     this.initResizeListener();
-    // this.initClearListener();
+    this.initClearListener();
     this.run();
   };
 
@@ -96,12 +96,21 @@ class Engine {
     })
   }
 
-  // initClearListener() {
-  //   this.canvas.addEventListener('mousedown', (event) => {
-  //     cancelAnimationFrame(this.animationId)
-  //     this.ink.clear();
-  //   })
-  // }
+  initClearListener() {
+    this.canvas.addEventListener('mousedown', () => {
+      cancelAnimationFrame(this.animationId)
+      this.clear();
+    })
+  }
+
+  clear() {
+    this.ink.initClear();
+    const clear = () => {
+      this.animationId = requestAnimationFrame(clear)
+      this.ink.clear()
+    }
+    this.animationId = requestAnimationFrame(clear)
+  }
 
   initInputListener() {
     // Multitouch Events!
@@ -238,6 +247,7 @@ class Ink {
     this.getInput = false;
     this.hasParticles = false;
     this.topParticles = {};
+    this.fallParticles = [];
 
   }
     /**
@@ -449,10 +459,15 @@ class Ink {
     if (!this.hasParticles) {
       this.hasParticles = true;
     }
+    // console.log(this.topParticles)
   };
 
-  updateTopParticles() {
-    
+  updateTopParticles(p) {
+    const x = Math.round(p.x)
+    const top = this.topParticles[x]
+    if (!top) {this.topParticles[x] = [p.y, p.c]}
+    else if (p.y < top[0]) {this.topParticles[x] = [p.y, p.c]}
+    else {return;}
   }
   /**
    * This function is called when user click reset button
@@ -472,6 +487,46 @@ class Ink {
     // Do wathever you should do here (kill timer?)
     // We will Destroy this object when we leave this function
   // };
+
+  clear() {
+    this.animateClear();
+    this.renderClear();
+  }
+
+  initClear() {
+    for (let p in this.topParticles) {
+      this.fallParticles.push({
+        x: parseFloat(p),
+        y: this.topParticles[p][0],
+        c: this.colors[Math.random() * this.colors.length | 0],
+        ys: 5
+      })
+    }
+  }
+
+  animateClear() {
+    for (let i = 0; i < this.fallParticles.length; ++i) {
+      const p = this.fallParticles[i];
+      p.y += p.ys
+      // p.ys = p.ys > 1 ? p.ys - 1 : p.ys
+    }
+  }
+
+  renderClear() {
+    for (var i = 0; i < this.fallParticles.length; ++i) {
+      const p = this.fallParticles[i];
+      this.engine.ctx.globalAlpha = 1.0;
+      this.engine.ctx.fillStyle = p.c;
+      this.engine.ctx.fillRect(p.x, p.y, 1, 3);
+    }
+    // this.fallParticles.forEach(p => {
+    //   this.engine.ctx.fillStyle = p.c;
+    //   this.engine.ctx.strokeStyle = p.c;
+    //   // console.log(parseFloat(p), this.topParticles[p])
+    //   this.engine.ctx.fillRect(p.x, p.y, 1, 1)
+    // })
+  }
+
   gradient(startColor, endColor, steps) {
     const start = {
             'Hex'   : startColor,
