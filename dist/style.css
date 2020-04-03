@@ -22,6 +22,19 @@ body {
   z-index: 1;
 }
 
+.hidden {
+  display: none;
+} 
+
+#welcome {
+  font-size: 40px;
+  font-family: sans-serif;
+  margin-top: 50vh;
+  margin-left: 50%;
+  position: absolute;
+  z-index: 1;
+}
+
 #credit {
   color: rgb(155, 223, 255);
   position: absolute;

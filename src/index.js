@@ -51,18 +51,11 @@ class Engine {
   }
 
   reset() {
-    // we call game object reseter
     cancelAnimationFrame(this.animationId)
     this.ink = null;
     this.initInk()
   };
 
-  // getImage() {
-  //   return this.canvas.toDataURL();
-  // };
-    /**
-     * Private Methods
-     */
   initCanvas() {
     // create The Canvas
     this.background = document.createElement('canvas');
@@ -74,7 +67,7 @@ class Engine {
     this.canvas.height = this.height;
     this.canvas.classList.add('paint')
     // we clean the DOM
-    this.el.innerHTML = '';
+    // this.el.innerHTML = '';
     // append canvas to DOM
     this.el.appendChild(this.background);
     this.el.appendChild(this.canvas);
@@ -110,6 +103,26 @@ class Engine {
       this.ink.clear()
     }
     this.animationId = requestAnimationFrame(clear)
+  }
+
+  finale() {
+    cancelAnimationFrame(this.animationId)
+    const finale = () => {
+      this.animationId = requestAnimationFrame(finale)
+      this.ink.finale()
+    }
+    this.animationId = requestAnimationFrame(finale)
+  }
+
+  welcome() {
+    cancelAnimationFrame(this.animationId)
+    document.querySelector('.paint').remove()
+    document.querySelector('#welcome').classList.remove('hidden')
+    const welcome = () => {
+      this.animationId = requestAnimationFrame(welcome)
+      this.ink.changeBg()
+    }
+    this.animationId = requestAnimationFrame(welcome)
   }
 
   initInputListener() {
@@ -234,13 +247,8 @@ class Ink {
     this.round = 0;
     this.darken = false;
     this.colors = Object.values(colorPalette);
-    // ideal to fine tune your brush!
-    this.parameters = {
-      squareSize: 10
-    };
     this.fluidmap = [];
     this.particles = [];
-    // this.oldParticles = [];
     this.width = this.engine.width / 20 | 0;
     this.height = this.engine.height / 20 | 0;
     this.inputsDelta = {};
@@ -248,19 +256,17 @@ class Ink {
     this.hasParticles = false;
     this.topParticles = {};
     this.highestParticle = this.engine.height;
+    this.oldParticles = [];
     this.fallParticles = [];
     this.clearParticles = [];
     this.startClear = false;
+    this.startFall = false;
+    this.startHi = false;
     this.midHeight = 0;
-
+    this.finaleCover = 0;
   }
-    /**
-     * This function is called after we created your pobject
-     */
+
   init() {
-    // Init your experience here
-    // example : we paint canvas with blue color
-    // Call the initers
     for (let x = 0; x <= this.width; ++x) {
       this.fluidmap[x] = [];
       for (let y = 0; y <= this.height; ++y) {
@@ -323,24 +329,6 @@ class Ink {
       })});
     }
   }
-
-  // prepClear() {
-  //   this.oldParticles.push(...this.particles)
-  //   if (!this.oldParticles) { return; }
-  //   this.oldParticles.reverse();
-  //   this.engine.ctx.strokeStyle = this.bg_color;
-  //   this.engine.ctx.fillStyle = this.bg_color;
-  //   this.engine.ctx.globalAlpha = 1;
-  // }
-
-  // clear() {
-  //   this.prepClear();
-  //   for (var i = 0; i < this.oldParticles.length; ++i) {
-  //     const p = this.oldParticles[i];
-  //     // this.engine.ctx.fillStyle = p.c;
-  //     this.engine.ctx.fillRect(p.x, p.y, 1, 1);
-  //   }
-  // }
 
   fillGap(pp, x , y, c) {
     const dx = x - pp.x
@@ -407,6 +395,9 @@ class Ink {
       }
     }
     this.fluidmap = newFluid;
+    if (this.particles.length > 2000) {
+      this.oldParticles.push(...this.particles.splice(0, this.particles.length - 2000))
+    }
     for (let i = 0; i < this.particles.length; ++i) {
       const p = this.particles[i];
       p.xs -= p.xs / 15;
@@ -423,9 +414,6 @@ class Ink {
       if (p.y < 0 || p.y > this.engine.height) {
         p.xs = -p.xs;
       }
-    }
-    if (this.particles.length > 2000) {
-      this.particles.splice(0, this.particles.length - 2000)
     }
   };
 
@@ -463,7 +451,6 @@ class Ink {
     if (!this.hasParticles) {
       this.hasParticles = true;
     }
-    // console.log(this.topParticles)
   };
 
   updateTopParticles(p) {
@@ -476,29 +463,6 @@ class Ink {
         this.highestParticle = p.y
       }
     } else { return; }
-  }
-  /**
-   * This function is called when user click reset button
-   */
-  reset() {
-    // Here handle what happen when user click reset button
-    // TIPS : Clean the canvas or paint it with bg color
-    // TIPS2 : Throw away all your particles!
-    // example : we paint canvas with blue color
-    this.engine.ctx.fillStyle = this.bg_color;
-    this.engine.ctx.fillRect(0, 0, this.engine.width, this.engine.height);
-  };
-  /**
-   * This function is called when this brush will be deleted
-   */
-  // destroy() {
-    // Do wathever you should do here (kill timer?)
-    // We will Destroy this object when we leave this function
-  // };
-
-  clear() {
-    this.animateClear();
-    this.renderClear();
   }
 
   initClear() {
@@ -513,46 +477,117 @@ class Ink {
         x: parseFloat(p),
         y: this.topParticles[p][0] - 10,
         c: this.topParticles[p][1],
-        ys: 5
+        ys: 10
       })
     }
+    this.oldParticles.push(...this.particles)
+    this.oldParticles.forEach(p => p.ys = 5)
     this.midHeight = Math.round((this.engine.height - this.highestParticle) / 2) * 2
-    console.log(this.midHeight)
+  }
+
+  clear() {
+    this.animateClear();
+    this.renderClear();
   }
 
   animateClear() {
-    for (let i = 0; i < this.fallParticles.length; ++i) {
-      const p = this.fallParticles[i];
-      if (Math.round(p.y) === this.midHeight) {
-        this.startClear = true;
+    if (this.oldParticles) {
+      for (let i = 0; i < this.oldParticles.length; ++i) {
+        const p = this.oldParticles[i];
+        if (p.y >= this.engine.height) {
+          this.oldParticles.splice(this.oldParticles.indexOf(p), 1)
+          continue;
+        }
+        if (!this.startFall && Math.round(p.y) === this.engine.height) {
+          this.startFall = true;
+          this.engine.bgCtx.fillStyle = this.colors[Math.random() * this.colors.length | 0]
+          this.engine.bgCtx.fillRect(0, 0, this.engine.width, this.engine.height)
+        }
+        p.y += p.ys
       }
-      p.y += p.ys
+    }
+
+    if (!this.startFall) { return; }
+
+    if (this.fallParticles) {
+      for (let i = 0; i < this.fallParticles.length; ++i) {
+        const p = this.fallParticles[i];
+        if (p.y >= this.engine.height) {
+          this.fallParticles.splice(this.fallParticles.indexOf(p), 1)
+          continue;
+        }
+        if (!this.startClear && Math.round(p.y) === this.engine.height) {
+          this.startClear = true;
+          this.engine.bgCtx.fillStyle = this.colors[Math.random() * this.colors.length | 0]
+          this.engine.bgCtx.fillRect(0, 0, this.engine.width, this.engine.height)
+        }
+        p.y += p.ys
+      }
     }
 
     if (!this.startClear) { return; }
 
-    for (let i = 0; i < this.clearParticles.length; ++i) {
-      const p = this.clearParticles[i];
-      p.y += p.ys
+    if (this.clearParticles) {
+      for (let i = 0; i < this.clearParticles.length; ++i) {
+        const p = this.clearParticles[i];
+        if (p.y >= this.engine.height) {
+          this.clearParticles.splice(this.clearParticles.indexOf(p), 1)
+          continue;
+        }
+        if (!this.startHi && Math.round(p.y) === this.engine.height) {
+          this.startHi = true;
+          this.engine.bgCtx.fillStyle = this.colors[Math.random() * this.colors.length | 0]
+          this.engine.bgCtx.fillRect(0, 0, this.engine.width, this.engine.height)
+        }
+        p.y += p.ys
+      }
     }
   }
+  
 
   renderClear() {
-    for (var i = 0; i < this.fallParticles.length; ++i) {
-      const p = this.fallParticles[i];
-      this.engine.ctx.globalAlpha = 1.0;
-      this.engine.ctx.fillStyle = p.c;
-      this.engine.ctx.fillRect(p.x, p.y, 1, 3);
+    if (this.oldParticles) {
+      for (var i = 0; i < this.oldParticles.length; ++i) {
+        const p = this.oldParticles[i];
+        this.engine.ctx.globalAlpha = 1.0;
+        this.engine.ctx.fillStyle = p.c;
+        this.engine.ctx.fillRect(p.x, p.y, 1, 3);
+      }
+    }
+  
+    if (!this.startFall) { return; }
+
+    if (this.fallParticles) {
+      for (var i = 0; i < this.fallParticles.length; ++i) {
+        const p = this.fallParticles[i];
+        this.engine.ctx.globalAlpha = 1.0;
+        this.engine.ctx.fillStyle = p.c;
+        this.engine.ctx.fillRect(p.x, p.y, 1, 4);
+      }
     }
 
     if (!this.startClear) { return; }
 
-    for (var i = 0; i < this.clearParticles.length; ++i) {
-      const p = this.clearParticles[i];
-      this.engine.ctx.globalAlpha = 1.0;
-      this.engine.ctx.fillStyle = p.c;
-      this.engine.ctx.fillRect(p.x, p.y, 1, 3);
+    if (this.clearParticles) {
+      for (var i = 0; i < this.clearParticles.length; ++i) {
+        const p = this.clearParticles[i];
+        this.engine.ctx.globalAlpha = 1.0;
+        this.engine.ctx.fillStyle = p.c;
+        this.engine.ctx.fillRect(p.x, p.y, 1, 11);
+      }
     }
+    if (this.clearParticles.length === 0) {this.engine.finale()}
+  }
+
+  finale() {
+    console.log('FINALE')
+    if (this.finaleCover < this.engine.height) {
+      this.engine.bgCtx.fillStyle = this.colors[Math.random() * this.colors.length | 0]
+      this.engine.bgCtx.fillRect(0, 0, this.engine.width, this.engine.height)
+      this.engine.ctx.fillStyle = this.colors[Math.random() * this.colors.length | 0]
+      this.engine.ctx.fillRect(0, this.finaleCover, this.engine.width, this.engine.height - this.finaleCover)
+      this.finaleCover += Math.random() * 30
+    } else { this.engine.welcome() } 
   }
 
   gradient(startColor, endColor, steps) {
