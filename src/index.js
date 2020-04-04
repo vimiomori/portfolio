@@ -20,6 +20,7 @@ class Engine {
     // The current Date
     this.startTime = new Date().getTime();
     this.now = 0;
+    this.timeUp = false;
     // // Device capture Time
     // this.captureTime = 0;
     // this.lastCapture = 0;
@@ -41,6 +42,9 @@ class Engine {
     const run = () => {
       this.animationId = requestAnimationFrame(run)
       this.now = new Date().getTime();
+      if (this.now - this.startTime > 5000){
+        this.timeUp = true;
+      } 
       if (this.now - this.startTime < 60000) {
         this.ink.run()
       } else {
@@ -91,6 +95,7 @@ class Engine {
 
   initClearListener() {
     this.canvas.addEventListener('mousedown', () => {
+      if (!this.timeUp) { return; }
       cancelAnimationFrame(this.animationId)
       this.clear();
     })
@@ -471,7 +476,7 @@ class Ink {
         x: parseFloat(p),
         y: this.topParticles[p][0],
         c: this.colors[Math.random() * this.colors.length | 0],
-        ys: 5
+        ys: 7
       })
       this.clearParticles.push({
         x: parseFloat(p),
@@ -562,7 +567,7 @@ class Ink {
         const p = this.fallParticles[i];
         this.engine.ctx.globalAlpha = 1.0;
         this.engine.ctx.fillStyle = p.c;
-        this.engine.ctx.fillRect(p.x, p.y, 1, 4);
+        this.engine.ctx.fillRect(p.x, p.y, 1, 7);
       }
     }
 
@@ -586,7 +591,7 @@ class Ink {
       this.engine.bgCtx.fillRect(0, 0, this.engine.width, this.engine.height)
       this.engine.ctx.fillStyle = this.colors[Math.random() * this.colors.length | 0]
       this.engine.ctx.fillRect(0, this.finaleCover, this.engine.width, this.engine.height - this.finaleCover)
-      this.finaleCover += Math.random() * 30
+      this.finaleCover += Math.random() * 20
     } else { this.engine.welcome() } 
   }
 
