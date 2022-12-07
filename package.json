@@ -21,7 +21,7 @@
   "homepage": "https://github.com/vimiomori/portfolio#readme",
   "dependencies": {
     "css-element-queries": "^1.2.3",
-    "express": "^4.17.1"
+    "express": "^4.18.2"
   },
   "devDependencies": {
     "webpack": "^4.42.1",
